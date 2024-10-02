@@ -1,0 +1,10 @@
+{
+    "makefile.buildLog": "",
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/oskar/text-editor",
+            "binaryPath": "/home/oskar/text-editor/editor",
+            "binaryArgs": []
+        }
+    ]
+}
