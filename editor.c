@@ -1,6 +1,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <dirent.h>
+#include <string.h>
+
+#define NUM_nombres 100
+#define NUM_letras 64
+// estructura de datos para almacenar archivos
+typedef struct arch{
+    //la posición de la carpeta
+    int numero;
+    //informacion sobre el archivo
+    char nombres[NUM_nombres][NUM_letras];
+};
 
 void informacion(char* buffer);
 struct arch list(opcion);
@@ -8,14 +19,6 @@ int create();
 int edit();
 int delete();
 
-//estructura de datos para almacenar archivos
-typedef struct arch
-{
-    //la posición de la carpeta
-    int numero;
-    //informacion sobre el archivo
-    struct dirent *archivo_info;
-};
 
 
 int main(){
@@ -38,7 +41,8 @@ int main(){
             create();
             break;
         case 'a':
-            edit();
+            printf("\033[2J");
+            edit(archivo);
             break;
         case 'e':
             delete();
@@ -72,8 +76,9 @@ struct arch list(int opcion){
     // defino un puntero hacia el directorio 
     DIR *dr = opendir("./archivos");
     //defino una estructura que almacena el contenido del directorio y su posición
-    struct arch archivo;
-    archivo.numero = 0;
+    struct dirent *archivo;
+    struct arch archivos;
+    archivos.numero = 0;
 
     if (dr == NULL)  // opendir returns NULL if couldn't open directory
     {
@@ -83,20 +88,23 @@ struct arch list(int opcion){
     int contador = 0;
 
     // leo el nombre de los archivos con la función readdir(dr) dr siendo la carpta
-    while ((archivo.archivo_info = readdir(dr)) != NULL){
-        if (archivo.archivo_info->d_name[1] != '.' && archivo.archivo_info->d_name[0] != '.'){
+    while ((archivo = readdir(dr)) != NULL){
+        if (archivo->d_name[1] != '.' && archivo->d_name[0] != '.'){
             if (opcion == 1){
                 //Muestro los archivos en pantalla
-                printf("%d      %s\n", archivo.numero , archivo.archivo_info->d_name);
-                printf("\n\n");
+                printf("%d:  %s\n", contador, archivo->d_name);
             }
             //añado los datos a la variable archivo sin mostrarlos en la pantalla para mantene la cuenta
-            archivo.numero++;
+            archivos.numero++;
+            // copiar los nombres de los archivos
+            strcpy(archivos.nombres[contador], archivo->d_name);
+            contador++;
         }
     }
+    printf("\n\n");
     //se cierra el directorio
     closedir(dr);
-    return archivo;
+    return archivos;
 }
 int create(){
     //preguntar por el nombre del archivo
@@ -123,7 +131,36 @@ int create(){
     return 0;
 }
 int edit(){
+    int eleccion;
+    // conseguir la lista de archivos
+    struct arch archivos = list(1);
+    while (eleccion > archivos.numero -1 || eleccion < 1){
+        printf("Elige el archivo que quieres editar: ");
+        // guardar la elección
+        scanf("%d", &eleccion);
+        printf("\n");
+    }
+    printf("%s", archivos.nombres[0]);
+    // abrir el archivo en modo escritura
+    //ceo la ruta completa donde guardar los archivos
+    char rutaCompleta[256];
+    //1º donde se guardarán los caracteres 2º el formato 3º los argumentos
+    sprintf(rutaCompleta, "%s/%s", "./archivos", archivos.nombres[eleccion]);
 
+    FILE* archivo = fopen(rutaCompleta, "r");
+    char buffer[1024];
+
+    fread(buffer, sizeof(buffer), 1, archivo);
+    
+    
+    for (int contador = 0, buffer[contador] != EOF, contador++){
+        if ()
+        printf("%c", buffer[contador]);
+    }
+    printf(buffer);
+
+    fclose(archivo);
+    return 0;
 }
 int delete(){
 
