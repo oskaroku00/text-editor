@@ -41,7 +41,6 @@ int main(){
             create();
             break;
         case 'a':
-            printf("\033[2J");
             edit(archivo);
             break;
         case 'e':
@@ -68,7 +67,7 @@ void informacion(char* buffer){
     printf("Que eliges? : ");
     // save the user input in buffer
     scanf("%1s", buffer);
-    printf("\n\n\n");
+    printf("\n\n");
 }
 
 struct arch list(int opcion){
@@ -131,16 +130,16 @@ int create(){
     return 0;
 }
 int edit(){
-    int eleccion;
+    int eleccion = -1;
     // conseguir la lista de archivos
-    struct arch archivos = list(1);
-    while (eleccion > archivos.numero -1 || eleccion < 1){
+    int i = 1;
+    struct arch archivos = list(i);
+    while (eleccion > archivos.numero -1 || eleccion < 0){
         printf("Elige el archivo que quieres editar: ");
         // guardar la elección
-        scanf("%d", &eleccion);
+        scanf(" %d", &eleccion);
         printf("\n");
     }
-    printf("%s", archivos.nombres[0]);
     // abrir el archivo en modo escritura
     //ceo la ruta completa donde guardar los archivos
     char rutaCompleta[256];
@@ -150,16 +149,49 @@ int edit(){
     FILE* archivo = fopen(rutaCompleta, "r");
     char buffer[1024];
 
+    //lee todos los caracteres del documento maximo 1024 caracteres
     fread(buffer, sizeof(buffer), 1, archivo);
-    
-    
-    for (int contador = 0, buffer[contador] != EOF, contador++){
-        if ()
-        printf("%c", buffer[contador]);
-    }
+
     printf(buffer);
 
+    printf("\nNuevo\n");
+    char bb[1];
+
+
+    int linea, contador = 0;
+
+    rewind(archivo);
+    while (!feof(bb)){
+        fread(bb, sizeof(bb), 1, archivo);
+        // printf(bb[0]);
+        if(strcmp(bb[0], '\n')){
+            printf("%d-");
+            linea++;
+        }
+        else {
+            printf("%c", bb[0]);
+        }
+    }
+
+
+    printf("\nNuevo\n");
+
+
+
+    // feof detecta el caracter final del documento
+    while ( !feof( buffer[contador] )){
+        if(strcmp(buffer[contador], '\n')){
+            printf("%d-");
+            linea++;
+        }
+        else {
+            printf("%c", buffer[contador]);
+        }
+        contador++;
+    }
+
     fclose(archivo);
+    printf("\n\n\n");
     return 0;
 }
 int delete(){
