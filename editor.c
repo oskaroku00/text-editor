@@ -155,21 +155,21 @@ int edit(){
     printf(buffer);
 
     printf("\nNuevo\n");
-    char bb[1];
 
-
+    // mejor leer directamente todo el archivo y guardar los punteros de las lineas
+    char c;
     int linea, contador = 0;
-
+    linea = 1;
     rewind(archivo);
-    while (!feof(bb)){
-        fread(bb, sizeof(bb), 1, archivo);
-        // printf(bb[0]);
-        if(strcmp(bb[0], '\n')){
-            printf("%d-");
+    // leer un caracter del archivo y detectar si cambia de línea
+    printf("0:  ");
+    while (fread(&c, sizeof(c), 1, archivo) != 0){
+        if(c == '\n'){
+            printf("\n%d:  ", linea);
             linea++;
         }
         else {
-            printf("%c", bb[0]);
+            printf("%c", c);
         }
     }
 
@@ -179,16 +179,6 @@ int edit(){
 
 
     // feof detecta el caracter final del documento
-    while ( !feof( buffer[contador] )){
-        if(strcmp(buffer[contador], '\n')){
-            printf("%d-");
-            linea++;
-        }
-        else {
-            printf("%c", buffer[contador]);
-        }
-        contador++;
-    }
 
     fclose(archivo);
     printf("\n\n\n");
@@ -197,4 +187,3 @@ int edit(){
 int delete(){
 
 }
-
