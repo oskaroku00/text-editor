@@ -72,7 +72,7 @@ void informacion(char* buffer){
 
 struct arch list(int opcion){
     // opendir() returns a pointer of DIR type.
-    // defino un puntero hacia el directorio 
+    // defino un puntero hacia el directorio
     DIR *dr = opendir("./archivos");
     //defino una estructura que almacena el contenido del directorio y su posición
     struct dirent *archivo;
@@ -88,7 +88,7 @@ struct arch list(int opcion){
 
     // leo el nombre de los archivos con la función readdir(dr) dr siendo la carpta
     while ((archivo = readdir(dr)) != NULL){
-        if (archivo->d_name[1] != '.' && archivo->d_name[0] != '.'){
+        if (archivo->d_name[0] != '.' && archivo->d_name[1] != '.'){
             if (opcion == 1){
                 //Muestro los archivos en pantalla
                 printf("%d:  %s\n", contador, archivo->d_name);
@@ -98,7 +98,7 @@ struct arch list(int opcion){
             // copiar los nombres de los archivos
             strcpy(archivos.nombres[contador], archivo->d_name);
             contador++;
-        }
+            }
     }
     printf("\n\n");
     //se cierra el directorio
@@ -134,7 +134,7 @@ int edit(){
     // conseguir la lista de archivos
     int i = 1;
     struct arch archivos = list(i);
-    while (eleccion > archivos.numero -1 || eleccion < 0){
+    while (eleccion > archivos.numero || eleccion < 0){
         printf("Elige el archivo que quieres editar: ");
         // guardar la elección
         scanf(" %d", &eleccion);
@@ -147,38 +147,41 @@ int edit(){
     sprintf(rutaCompleta, "%s/%s", "./archivos", archivos.nombres[eleccion]);
 
     FILE* archivo = fopen(rutaCompleta, "r");
-    char buffer[1024];
 
-    //lee todos los caracteres del documento maximo 1024 caracteres
+    //extra de espacio para colocar líneas nuevas
+    char padding[256];
+
+    //manda el cursor del archivo al final del docuemento
+    fseek(archivo, 0L, SEEK_END);
+
+    //nos da la posición del cursor
+    long int longitud_inicial_archivo = ftell(archivo);
+    //devuelve el cursor al principio del documento
+    rewind(archivo);
+
+    char buffer[longitud_inicial_archivo];
+
+    //lee todos los caracteres del documento
     fread(buffer, sizeof(buffer), 1, archivo);
+    buffer[longitud_inicial_archivo] = "\0";
 
-    printf(buffer);
 
-    printf("\nNuevo\n");
-
-    // mejor leer directamente todo el archivo y guardar los punteros de las lineas
-    char c;
     int linea, contador = 0;
     linea = 1;
-    rewind(archivo);
-    // leer un caracter del archivo y detectar si cambia de línea
+
     printf("0:  ");
-    while (fread(&c, sizeof(c), 1, archivo) != 0){
-        if(c == '\n'){
+    while (contador <= longitud_inicial_archivo){
+        if(buffer[contador] == '\n'){
             printf("\n%d:  ", linea);
             linea++;
         }
         else {
-            printf("%c", c);
+            printf("%c", buffer[contador]);
         }
+        contador++;
     }
 
 
-    printf("\nNuevo\n");
-
-
-
-    // feof detecta el caracter final del documento
 
     fclose(archivo);
     printf("\n\n\n");
@@ -187,3 +190,4 @@ int edit(){
 int delete(){
 
 }
+
