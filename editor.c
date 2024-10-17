@@ -146,29 +146,30 @@ int edit(){
 
     FILE* archivo = fopen(rutaCompleta, "r");
 
-    //extra de espacio para colocar líneas nuevas
 
-    //manda el cursor del archivo al final del docuemento
-    fseek(archivo, 0L, SEEK_END);
 
-    //nos da la posición del cursor
-    long int longitud_archivo = ftell(archivo);
-    //devuelve el cursor al principio del documento
-    rewind(archivo);
+    int bucle = 1;
+    while(bucle==1){
+        //manda el cursor del archivo al final del docuemento
+        fseek(archivo, 0, SEEK_END);
 
-    char buffer[longitud_inicial_archivo];
+        //nos da la posición del cursor
+        long int longitud_archivo = ftell(archivo);
+        //devuelve el cursor al principio del documento
+        rewind(archivo);
 
-    //lee todos los caracteres del documento
-    fread(buffer, sizeof(buffer), 1, archivo);
-    buffer[longitud_inicial_archivo] = "\0";
+        char buffer[longitud_archivo];
 
-    int bucle;
-    while(bucle){
+        //lee todos los caracteres del documento
+        fread(buffer, sizeof(buffer), 1, archivo);
+
+        buffer[longitud_archivo] = "\0";
+
         int linea, contador = 0;
         linea = 1;
 
         printf("0:  ");
-        while (contador < longitud_archivo){
+        while (contador <= longitud_archivo){
             if(buffer[contador] == '\n'){
                 printf("\n%d:  ", linea);
                 linea++;
@@ -178,32 +179,46 @@ int edit(){
             }
             contador++;
         }
-        printf(linea)
-
+        // printf(linea);
+        printf("\n");
 
         //done el usuari va a escribir la línea
         char input[256];
         //elección de línea
-        char elección[1] = -1;
-        while (eleccion >  || eleccion < 0){
+        int usuario = -1;
+
+        char *line_adress;
+        char* b = buffer;
+
+        while (usuario > linea || usuario < -1){
             printf("Línea o q para salir del archivo: ");
             // guardar la elección
-            scanf(" %1s", &elección);
+            scanf(" %i", &usuario);
             printf("\n");
-            if(elección[0] == "q") return 0;
+            if(usuario == - 1) return 0;
 
-            for(int i = 0; i <= eleccion; i++){
-                buffer = strchr(buffer, '\n') + 1;
+        }
+            for(int i = 0; i <= usuario; i++){
+                line_adress = strchr(buffer, '\n') + 1;
             }
 
             char* line_end = strchr(buffer, '\n');
+
+            printf("\n");
+            printf(line_end);
+
             char saved[1024] = { 0 };
             strcpy(saved, line_end);
             scanf("%s", buffer);
             strcpy(buffer + strlen(buffer), saved);
 
-            print(buffer);
-        }
+            printf("\n\n\n");
+
+            FILE *f = fopen(rutaCompleta, "w");
+            fwrite(buffer, strlen(buffer), 1, f);
+            fclose(f);
+
+
     }
 
 
