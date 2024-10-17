@@ -19,8 +19,6 @@ int create();
 int edit();
 int delete();
 
-
-
 int main(){
     int bucle = 0;
     //lista global de los archivos
@@ -149,13 +147,12 @@ int edit(){
     FILE* archivo = fopen(rutaCompleta, "r");
 
     //extra de espacio para colocar líneas nuevas
-    char padding[256];
 
     //manda el cursor del archivo al final del docuemento
     fseek(archivo, 0L, SEEK_END);
 
     //nos da la posición del cursor
-    long int longitud_inicial_archivo = ftell(archivo);
+    long int longitud_archivo = ftell(archivo);
     //devuelve el cursor al principio del documento
     rewind(archivo);
 
@@ -165,21 +162,51 @@ int edit(){
     fread(buffer, sizeof(buffer), 1, archivo);
     buffer[longitud_inicial_archivo] = "\0";
 
+    int bucle;
+    while(bucle){
+        int linea, contador = 0;
+        linea = 1;
 
-    int linea, contador = 0;
-    linea = 1;
+        printf("0:  ");
+        while (contador < longitud_archivo){
+            if(buffer[contador] == '\n'){
+                printf("\n%d:  ", linea);
+                linea++;
+            }
+            else {
+                printf("%c", buffer[contador]);
+            }
+            contador++;
+        }
+        printf(linea)
 
-    printf("0:  ");
-    while (contador <= longitud_inicial_archivo){
-        if(buffer[contador] == '\n'){
-            printf("\n%d:  ", linea);
-            linea++;
+
+        //done el usuari va a escribir la línea
+        char input[256];
+        //elección de línea
+        char elección[1] = -1;
+        while (eleccion >  || eleccion < 0){
+            printf("Línea o q para salir del archivo: ");
+            // guardar la elección
+            scanf(" %1s", &elección);
+            printf("\n");
+            if(elección[0] == "q") return 0;
+
+            for(int i = 0; i <= eleccion; i++){
+                buffer = strchr(buffer, '\n') + 1;
+            }
+
+            char* line_end = strchr(buffer, '\n');
+            char saved[1024] = { 0 };
+            strcpy(saved, line_end);
+            scanf("%s", buffer);
+            strcpy(buffer + strlen(buffer), saved);
+
+            print(buffer);
         }
-        else {
-            printf("%c", buffer[contador]);
-        }
-        contador++;
     }
+
+
 
 
 
@@ -188,6 +215,23 @@ int edit(){
     return 0;
 }
 int delete(){
+    int eleccion = -1;
+    // conseguir la lista de archivos
+    int i = 1;
+    struct arch archivos = list(i);
+    while (eleccion > archivos.numero || eleccion < 0){
+        printf("Elige el archivo que quieres eliminar: ");
+        // guardar la elección
+        scanf(" %d", &eleccion);
+        printf("\n");
+    }
+    // abrir el archivo en modo escritura
+    //ceo la ruta completa donde guardar los archivos
+    char rutaCompleta[256];
+    //1º donde se guardarán los caracteres 2º el formato 3º los argumentos
+    sprintf(rutaCompleta, "%s/%s", "./archivos", archivos.nombres[eleccion]);
 
+    //elimina el archivo
+    remove(rutaCompleta);
 }
 
