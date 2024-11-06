@@ -13,6 +13,12 @@ typedef struct arch{
     char nombres[NUM_nombres][NUM_letras];
 };
 
+typedef struct ln{
+    int numero;
+    int inicio[64];
+    int final[64];
+};
+
 void informacion(char* buffer);
 struct arch list(opcion);
 int create();
@@ -32,7 +38,7 @@ int main(){
         int i = 1;
         switch (input[0])
         {
-        case 'l'/* constant-expression */:
+            case 'l':
             archivo = list(i);
             break;
         case 'c':
@@ -144,90 +150,135 @@ int edit(){
     //1º donde se guardarán los caracteres 2º el formato 3º los argumentos
     sprintf(rutaCompleta, "%s/%s", "./archivos", archivos.nombres[eleccion]);
 
-    FILE* archivo = fopen(rutaCompleta, "r");
-
-
-
     int bucle = 1;
     while(bucle==1){
+        FILE* archivo = fopen(rutaCompleta, "r");
         //manda el cursor del archivo al final del docuemento
         fseek(archivo, 0, SEEK_END);
+        long longitud_archivo = ftell(archivo);
+        fseek(archivo, 0, SEEK_SET);
 
-        //nos da la posición del cursor
-        long int longitud_archivo = ftell(archivo);
-        //devuelve el cursor al principio del documento
-        rewind(archivo);
-
-        char buffer[longitud_archivo];
-
-        //lee todos los caracteres del documento
+        //lee todos los caracteres del archivo y crea la cadena donde guardarlos
+        char *buffer = malloc(sizeof(char) * longitud_archivo);
         fread(buffer, sizeof(buffer), 1, archivo);
+        buffer[longitud_archivo] = '\0'; // Terminar la cadena
 
-        buffer[longitud_archivo] = "\0";
+        struct ln linea;
+        linea.inicio[0] = 0;
 
-        int linea, contador = 0;
-        linea = 1;
+        int contador = 0;
+        int lineas = 1;
 
         printf("0:  ");
-        while (contador <= longitud_archivo){
-            if(buffer[contador] == '\n'){
-                printf("\n%d:  ", linea);
-                linea++;
+        while (contador < longitud_archivo) {
+            if (buffer[contador] == '\n') {
+                printf("\n%d:  ", lineas);
+
+                linea.numero = lineas;
+                linea.final[lineas - 1] = contador;
+                linea.inicio[lineas] = contador + 1;
+
+                lineas++;
+            }
+            else if( buffer[contador] == EOF){
+                linea.final[lineas] = contador;
             }
             else {
                 printf("%c", buffer[contador]);
             }
             contador++;
         }
-        // printf(linea);
-        printf("\n");
+        printf("\n\n");
 
-        //done el usuari va a escribir la línea
-        char input[256];
-        //elección de línea
-        int usuario = -1;
 
-        char *line_adress;
-        char* b = buffer;
-
-        while (usuario > linea || usuario < -1){
-            printf("Línea o q para salir del archivo: ");
-            // guardar la elección
-            scanf(" %i", &usuario);
+        int usuario;
+        do {
+            printf("Línea o q para salir del archivo o -1 para volver atrás: ");
+            scanf("%i", &usuario);
             printf("\n");
-            if(usuario == - 1) return 0;
+            if (usuario == -1) return 0;
+        } while (usuario > lineas || usuario < -1);
 
+        printf("%d\n", usuario);
+        printf("%d\n", lineas);
+        printf("Inserta el texto:   ");
+
+        char saved[1024];
+        scanf(" %[^\n]%*c", saved);
+        printf("%s \n", saved);
+
+        char *final = malloc(longitud_archivo + strlen(saved) + 2); // +2 para '\0' y un posible '\n'
+        if (!final) {
+            perror("Error al asignar memoria");
+            return 1;
         }
-            for(int i = 0; i <= usuario; i++){
-                line_adress = strchr(buffer, '\n') + 1;
+
+        // strncpy(final, &buffer, linea.inicio[usuario]);
+        // // linea.inicio[usuario]
+        // final[strlen(final) + 1] = '\0'; // Terminar la cadena
+        //
+        // strcat(final, saved);
+        //
+        //
+        // printf("Budfer:    %s\n", &buffer + linea.final[usuario]);
+
+
+        // strcat(final, buffer + linea.final[usuario]);
+        printf("%d",linea.numero);printf("\n");
+        printf("%d",linea.inicio[usuario]);printf("\n");
+        printf("%d",linea.final[usuario]);printf("\n");
+        printf("%c",sizeof(buffer)) ;printf("\n");
+        printf("\n");printf("\n");printf("\n");
+        if (usuario == 0){
+            FILE *f = fopen(rutaCompleta, "w");
+            if (f) {
+                strcat(final, saved);
+                if (linea.final[usuario] != 0){
+                    strcat(final, &buffer + linea.final[usuario]);
+                }
+                if (linea.final[usuario] == 0){
+                    strcat(final, "\n");
+                }
+
+                fwrite(final, strlen(final), 1, f);
+                fclose(f);
+                } else {
+                    perror("Error al abrir el archivo para escribir");
+                }
+        }
+
+        else if (usuario == lineas - 1) {
+
+            strcat(final, saved);
+            strcat(final, "\n");
+            FILE *f = fopen(rutaCompleta, "a");
+            if (f) {
+                fwrite(final, strlen(final), 1, f);
+                fclose(f);
+            } else {
+                perror("Error al abrir el archivo para escribir");
             }
+        }
 
-            char* line_end = strchr(buffer, '\n');
-
-            printf("\n");
-            printf(line_end);
-
-            char saved[1024] = { 0 };
-            strcpy(saved, line_end);
-            scanf("%s", buffer);
-            strcpy(buffer + strlen(buffer), saved);
-
-            printf("\n\n\n");
+        else{
+            strncpy(final, &buffer, linea.inicio[usuario]);
+            strcat(final, saved);
+            strcat(final, buffer + linea.final[usuario]);
 
             FILE *f = fopen(rutaCompleta, "w");
-            fwrite(buffer, strlen(buffer), 1, f);
-            fclose(f);
-
+            if (f) {
+                fwrite(final, strlen(final), 1, f);
+                fclose(f);
+            } else {
+                perror("Error al abrir el archivo para escribir");
+            }
+        }
+        // liberar memoria cerrando los archivos
+        free(buffer);
+        free(final);
+        fclose(archivo);
 
     }
-
-
-
-
-
-    fclose(archivo);
-    printf("\n\n\n");
-    return 0;
 }
 int delete(){
     int eleccion = -1;
