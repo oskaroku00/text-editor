@@ -160,8 +160,9 @@ int edit(){
 
         //lee todos los caracteres del archivo y crea la cadena donde guardarlos
         char *buffer = malloc(sizeof(char) * longitud_archivo);
-        fread(buffer, sizeof(buffer), 1, archivo);
-        buffer[longitud_archivo] = '\0'; // Terminar la cadena
+        fread(buffer, longitud_archivo, 1, archivo);
+
+        // buffer[longitud_archivo] = '\0'; // Terminar la cadena
 
         struct ln linea;
         linea.inicio[0] = 0;
@@ -174,20 +175,22 @@ int edit(){
             if (buffer[contador] == '\n') {
                 printf("\n%d:  ", lineas);
 
-                linea.numero = lineas;
+                linea.numero = lineas - 1;
                 linea.final[lineas - 1] = contador;
                 linea.inicio[lineas] = contador + 1;
 
                 lineas++;
             }
-            else if( buffer[contador] == EOF){
-                linea.final[lineas] = contador;
+            else if( buffer[contador] == longitud_archivo){
+                linea.final[lineas - 1] = contador;
             }
             else {
                 printf("%c", buffer[contador]);
             }
             contador++;
         }
+
+
         printf("\n\n");
 
 
@@ -199,57 +202,70 @@ int edit(){
             if (usuario == -1) return 0;
         } while (usuario > lineas || usuario < -1);
 
-        printf("%d\n", usuario);
-        printf("%d\n", lineas);
+
         printf("Inserta el texto:   ");
 
         char saved[1024];
         scanf(" %[^\n]%*c", saved);
-        printf("%s \n", saved);
 
-        char *final = malloc(longitud_archivo + strlen(saved) + 2); // +2 para '\0' y un posible '\n'
+
+        char *final = malloc(sizeof(char) * (longitud_archivo + strlen(saved) + 2)); // +2 para '\0' y un posible '\n'
         if (!final) {
             perror("Error al asignar memoria");
             return 1;
         }
-
-        // strncpy(final, &buffer, linea.inicio[usuario]);
-        // // linea.inicio[usuario]
-        // final[strlen(final) + 1] = '\0'; // Terminar la cadena
-        //
-        // strcat(final, saved);
-        //
-        //
-        // printf("Budfer:    %s\n", &buffer + linea.final[usuario]);
-
-
-        // strcat(final, buffer + linea.final[usuario]);
-        printf("%d",linea.numero);printf("\n");
-        printf("%d",linea.inicio[usuario]);printf("\n");
-        printf("%d",linea.final[usuario]);printf("\n");
-        printf("%c",sizeof(buffer)) ;printf("\n");
+        printf("USU %d\n", usuario);
+        printf("LIENAS %d\n", lineas);
+        printf("Saved- %s \n", saved);
+        printf("Num line %d",linea.numero);printf("\n");
+        printf("inicio %d",linea.inicio[usuario]);printf("\n");
+        printf("final %d",linea.final[usuario]);printf("\n");
+        printf("tamaño %d",strlen(buffer)) ;printf("\n");
+        printf("Buffer:\n %s",buffer) ;printf("\n");
         printf("\n");printf("\n");printf("\n");
+
+
+        printf("correcto\n");
         if (usuario == 0){
+
+            printf("start\n");
+
             FILE *f = fopen(rutaCompleta, "w");
             if (f) {
-                strcat(final, saved);
-                if (linea.final[usuario] != 0){
-                    strcat(final, &buffer + linea.final[usuario]);
+                printf("%d\n", linea.final[usuario]);
+
+                strcpy(final, saved);
+
+                // printf("%s",final);
+//                 :( magia
+//                 arreglar esto
+                if (linea.final[0] != 0 && usuario == 0){
+                    printf("%d\n", linea.final[0]);
+                    printf("%d\n", linea.final[1]);
+                    // printf(strlen(buffer) - linea.final[0] + 1);
+                    strcat(final, buffer + linea.final[0]);
+//                     magia negra que no se como funciona :)))))
+                    // for (int i = linea.final[0]; i <= strlen(buffer); i++){
+                    //     printf("Saved: %s\n",buffer[i]);
+                    //     strcat(final, buffer[i]);
+                    // }
                 }
                 if (linea.final[usuario] == 0){
                     strcat(final, "\n");
                 }
+                // printf("%s",final);
 
                 fwrite(final, strlen(final), 1, f);
                 fclose(f);
-                } else {
-                    perror("Error al abrir el archivo para escribir");
                 }
         }
 
-        else if (usuario == lineas - 1) {
+        else if (usuario + 1 == lineas) {
+            printf("append\n");
 
-            strcat(final, saved);
+            // printf("Final:  %s\n", &final) ;printf("\n");
+
+            strcpy(final, saved);
             strcat(final, "\n");
             FILE *f = fopen(rutaCompleta, "a");
             if (f) {
@@ -261,18 +277,29 @@ int edit(){
         }
 
         else{
-            strncpy(final, &buffer, linea.inicio[usuario]);
-            strcat(final, saved);
-            strcat(final, buffer + linea.final[usuario]);
-
+            printf("Insertar\n");
             FILE *f = fopen(rutaCompleta, "w");
             if (f) {
-                fwrite(final, strlen(final), 1, f);
-                fclose(f);
+//             escribir el principio
+                fwrite(buffer, linea.final[usuario - 1] + 1, 1, f);
+                printf("%s\n", buffer);
+//             añadir el texto del usuario
+                strcpy(final, saved);
+                strcat(final,"\n");
+                printf("%s\n", final);
+                fwrite(final, strlen(final) + 1,1,f);
+//             terminar de escribir lo que queda en el archivo
+//                 buffer a partir de la línea despues de la seleccionada
+//                 escribir los caracteres restantes
+                fwrite(buffer + (linea.final[usuario] + 1), strlen(buffer) - linea.final[usuario] - 1,1,f);
+                printf("%s", buffer + (linea.final[usuario] + 1));
+
             } else {
                 perror("Error al abrir el archivo para escribir");
             }
+            fclose(f);
         }
+
         // liberar memoria cerrando los archivos
         free(buffer);
         free(final);
